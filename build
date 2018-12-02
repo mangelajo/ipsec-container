@@ -25,6 +25,11 @@ conn mytunnel
     authby=secret
     left=$left_ip
     right=$right_ip
+    leftsubnet=0.0.0.0/0
+    rightsubnet=0.0.0.0/0
+    mark=5/0xffffffff
+    vti-interface=vti01
+    vti-routing=no
 EOF
 tee left/ipsec.conf right/ipsec.conf
 
