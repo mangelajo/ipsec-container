@@ -13,9 +13,3 @@ cp /configuration/* /etc
 /usr/libexec/ipsec/pluto --leak-detective --config /etc/ipsec.conf #--nofork
 sleep 10
 ipsec auto --add mytunnel
-
-#ExecStop=/usr/libexec/ipsec/whack --shutdown
-#ExecStopPost=/sbin/ip xfrm policy flush
-#ExecStopPost=/sbin/ip xfrm state flush
-#ExecStopPost=/usr/sbin/ipsec --stopnflog
-#ExecReload=/usr/libexec/ipsec/whack --listen

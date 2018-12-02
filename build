@@ -20,18 +20,6 @@ config setup
 	protostack=netkey
 
 conn mytunnel
-    #leftsourceip=192.168.0.7
-    #leftid=@west
-    #left=192.168.0.11
-    #left=38.145.33.215
-    #rightsourceip=10.10.10.7
-    #rightid=@east
-    #right=10.10.10.8
-    #right=38.145.34.83
-    #leftsubnet=192.168.0.0/24
-    #rightsubnets=10.10.10.0/24
-
-    # use auto=start when done testing the tunnel
     auto=add
     nat-ikev1-method=none
     authby=secret
