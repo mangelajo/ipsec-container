@@ -1,0 +1,12 @@
+set -x
+side=$1
+
+ip=$(cat ./vars | grep ${side}_ip | sed -e 's/.*=//')
+
+sudo docker run --rm --name $side -ti \
+    --cap-add NET_ADMIN \
+    --privileged \
+    --ip=$ip \
+    --network=vpn-network \
+    -v $(pwd)/$side:/configuration \
+    tun bash

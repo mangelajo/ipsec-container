@@ -1,0 +1,48 @@
+set -x
+
+source ./vars
+
+rm -rf left right
+mkdir left
+mkdir right
+
+pwd=$(pwgen -s 64 1) 
+echo $left_ip $right_ip : PSK \"$pwd\" > left/ipsec.secrets
+echo $left_ip $right_ip : PSK \"$pwd\" > right/ipsec.secrets
+
+cat <<EOF | 
+# /etc/ipsec.conf - Libreswan IPsec configuration file
+#
+# Manual:     ipsec.conf.5
+
+config setup
+	virtual_private=%v4:10.0.0.0/8,%v4:192.168.0.0/16,%v4:172.16.0.0/12,%v4:25.0.0.0/8,%v4:100.64.0.0/10,%v6:fd00::/8,%v6:fe80::/10
+	protostack=netkey
+
+conn mytunnel
+    #leftsourceip=192.168.0.7
+    #leftid=@west
+    #left=192.168.0.11
+    #left=38.145.33.215
+    #rightsourceip=10.10.10.7
+    #rightid=@east
+    #right=10.10.10.8
+    #right=38.145.34.83
+    #leftsubnet=192.168.0.0/24
+    #rightsubnets=10.10.10.0/24
+
+    # use auto=start when done testing the tunnel
+    auto=add
+    nat-ikev1-method=none
+    authby=secret
+    left=$left_ip
+    right=$right_ip
+EOF
+tee left/ipsec.conf right/ipsec.conf
+
+sudo docker build . -t tun
+
+if [ "$(sudo docker network list | grep 'vpn-network')" = "" ]
+then
+    sudo docker network create --subnet=$network_range --ip-range=$network_pool --gateway=$network_gw vpn-network
+fi
