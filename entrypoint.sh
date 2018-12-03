@@ -1,5 +1,8 @@
 set -x
+
 sysctl -w net.ipv4.ip_forward=1
+sysctl -w net.ipv4.conf.all.rp_filter=0
+
 cp /configuration/* /etc
 # Check configuration file
 /usr/libexec/ipsec/addconn --config /etc/ipsec.conf --checkconfig
