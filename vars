@@ -1,6 +1,11 @@
 network_range=172.30.0.0/16
 network_pool=172.30.5.0/24
 network_gw=172.30.5.254
-left_ip=172.30.5.33
-right_ip=172.30.5.44
-
+left_ip=50.1.1.1
+right_ip=50.1.1.2
+local_left_ip=172.30.5.33
+local_right_ip=172.30.5.44
+#left_ip=172.30.5.33
+#right_ip=172.30.5.44
+#left_vti=172.30.6.35/24
+#right_vti=172.30.6.45/24

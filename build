@@ -30,8 +30,28 @@ conn mytunnel
     mark=5/0xffffffff
     vti-interface=vti01
     vti-routing=no
+    #leftvti=$left_vti
+    #rightvti=$right_vti
 EOF
 tee left/ipsec.conf right/ipsec.conf
+
+cat <<EOF | 
+ip link add name vxlan42 type vxlan id 42 dev eth0 remote $local_right_ip local $local_left_ip dstport 4789
+ip addr add $left_ip/24 dev vxlan42
+ip link set up vxlan42
+EOF
+tee left/vxlan.sh
+
+chmod +x left/vxlan.sh
+
+cat <<EOF | 
+ip link add name vxlan42 type vxlan id 42 dev eth0 remote $local_left_ip local $local_right_ip dstport 4789
+ip addr add $right_ip/24 dev vxlan42
+ip link set up vxlan42
+EOF
+tee right/vxlan.sh
+
+chmod +x right/vxlan.sh
 
 sudo docker build . -t tun
 
