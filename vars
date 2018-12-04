@@ -4,9 +4,18 @@ network_pool=172.30.5.0/24
 network_gw=172.30.5.254
 
 #vars for building images, scripts, configs
+
+# The overlay IPs are more or less arbitrary.
+# Really no need to change these
 left_overlay_ip=50.1.1.1
 right_overlay_ip=50.1.1.2
+
+# The local ips are the IP addresses as they appear
+# internally on each container
 left_local_ip=172.30.5.33
 right_local_ip=172.30.5.44
+
+# The remote ips are the NAT ips or floating ips assigned
+# to each container
 left_remote_ip=$left_local_ip
 right_remote_ip=$right_local_ip
