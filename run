@@ -9,4 +9,4 @@ sudo docker run --rm --name $side -ti \
     --ip=$ip \
     --network=vpn-network \
     -v $(pwd)/$side:/configuration \
-    tun bash /${side}.sh
+    tun bash #/${side}.sh
