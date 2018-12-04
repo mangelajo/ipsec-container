@@ -54,11 +54,14 @@ echo $left_overlay_ip $right_overlay_ip : PSK \"$pwd\" > right/ipsec.secrets
 write_ipsec_conf left $left_overlay_ip $right_overlay_ip
 write_ipsec_conf right $left_overlay_ip $right_overlay_ip
 
+# WRITE VXLAN CREATION SCRIPT
 write_vxlan_script left $left_local_ip $right_remote_ip $left_overlay_ip
 write_vxlan_script right $right_local_ip $left_remote_ip $right_overlay_ip
 
+# BUILD THE IMAGE
 sudo docker build . -t tun
 
+# CREATE A NETWORK
 if [ "$(sudo docker network list | grep 'vpn-network')" = "" ]
 then
     sudo docker network create --subnet=$network_range --ip-range=$network_pool --gateway=$network_gw vpn-network
