@@ -3,7 +3,9 @@ set -x
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv4.conf.all.rp_filter=0
 
-cp /configuration/* /etc
+/configuration/vxlan.sh
+
+cp /configuration/ipsec.* /etc
 # Check configuration file
 /usr/libexec/ipsec/addconn --config /etc/ipsec.conf --checkconfig
 # Check for kernel modules
@@ -14,5 +16,5 @@ cp /configuration/* /etc
 /usr/sbin/ipsec --checknflog
 # Start the actual IKE daemon
 /usr/libexec/ipsec/pluto --leak-detective --config /etc/ipsec.conf #--nofork
-sleep 10
+sleep 5
 ipsec auto --add mytunnel
