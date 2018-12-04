@@ -39,9 +39,8 @@ EOF
 
 # INITIALIZE VARIABLES AND DIRECTORIES
 source ./vars
-rm -rf left right
-mkdir left
-mkdir right
+mkdir -p left
+mkdir -p right
 
 
 # WRITE THE IPSEC FILES
