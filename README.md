@@ -3,6 +3,10 @@ an ipsec tunnel (encapsulated in a vxlan tunnel) between
 them.
 
 Usage:
+A number (~60) kernel modules are required on the host. The easiest way to install
+these is by installing libreswan and then starting and stopping it:
+```ipsec setup start && ipsec setup stop```
+
 1. See the vars file for the variables that need to be set
 2. to build, say ./build
 3. launch the right side by calling ./run right
