@@ -15,9 +15,11 @@ fi
 
 # SETUP VXLAN TUNNEL
 
-ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT
+ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT srcport $VXLAN_PORT $VXLAN_PORT
 ip addr add $local_overlay_ip/24 dev vxlan42
 ip link set up vxlan42
+
+ethtool -K eth0 tx-checksum-ip-generic off
 
 # WRITE IPSEC CONFIG
 
