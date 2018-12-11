@@ -15,7 +15,7 @@ fi
 
 # SETUP VXLAN TUNNEL
 
-ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT srcport $VXLAN_PORT $VXLAN_PORT
+ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT srcport $((VXLAN_PORT + 1)) $((VXLAN_PORT + 2))
 ip addr add $local_overlay_ip/24 dev vxlan42
 ip link set up vxlan42
 

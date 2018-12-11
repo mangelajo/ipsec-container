@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipse-service-left 
+  labels:
+    run: ipsec-left
+spec:
+  selector:
+    run: ipsec-left
+  type: NodePort
+  ports:
+   - port: 31000
+     nodePort: 31000
+     targetPort: 31000
+     protocol: UDP
+
