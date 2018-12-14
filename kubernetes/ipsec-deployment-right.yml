@@ -5,16 +5,16 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: ipsec-right
+      run: ipsec-right
   replicas: 1
   template:
     metadata:
       labels:
-        app: ipsec-right
+        run: ipsec-right
     spec:
       containers:
-      - name: ipsec-left
-        image: docker.io/mangelajo/ipsec-container 
+      - name: ipsec-right
+        image: mangelajo/ipsec-container 
         securityContext:
           capabilities:
             add: ["NET_ADMIN"]
@@ -25,10 +25,32 @@ spec:
         - name: REMOTE_IP
           value: 38.145.34.212
         - name: VXLAN_PORT
-          value: "31000"
+          value: "30020"
         - name: IPSEC_SIDE
-          value: right
+          value: right 
         ports:
-        - containerPort: 31000 
+        - containerPort: 30020
           protocol: UDP
-
+          # hostPort: 30020
+        - containerPort: 80
+        - containerPort: 81
+        - containerPort: 82
+        - containerPort: 83
+        - containerPort: 84
+        - containerPort: 85
+        - containerPort: 86
+        - containerPort: 87
+        - containerPort: 88
+        - containerPort: 89
+        - containerPort: 90
+        - containerPort: 443
+        - containerPort: 444
+        - containerPort: 445
+        - containerPort: 446
+        - containerPort: 447
+        - containerPort: 448
+        - containerPort: 449
+        - containerPort: 450
+        - containerPort: 451
+        - containerPort: 452
+        - containerPort: 453

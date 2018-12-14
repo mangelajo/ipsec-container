@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ipsec-service-left 
+  name: ipsec-service-right 
   labels:
-    run: ipsec-left
+    run: ipsec-right
 spec:
   selector:
-    run: ipsec-left
+    run: ipsec-right
   type: NodePort
   externalTrafficPolicy: Local
   ports:
    - port: 30020
-     nodePort: 30020
-     targetPort: 30021
+     nodePort: 30021
+     targetPort: 30020
      protocol: UDP
 

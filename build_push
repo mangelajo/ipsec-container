@@ -1,0 +1,9 @@
+#!/bin/sh
+set -x
+set -e
+
+# BUILD THE IMAGE
+sudo docker build --tag mangelajo/ipsec-container .
+docker push mangelajo/ipsec-container
+
+

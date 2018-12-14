@@ -25,13 +25,13 @@ spec:
         - name: REMOTE_IP
           value: 38.145.35.46
         - name: VXLAN_PORT
-          value: "31000"
+          value: "30021"
         - name: IPSEC_SIDE
           value: left
         ports:
-        - containerPort: 31000 
+        - containerPort: 30021
           protocol: UDP
-          #hostPort: 31000
+          # hostPort: 30020
         - containerPort: 80
         - containerPort: 81
         - containerPort: 82

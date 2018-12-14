@@ -2,20 +2,31 @@
 
 set -x
 
+VXLAN_OVERHEAD=50
+IPSEC_OVERHEAD=56
+
+eth0_mtu=$(cat /sys/class/net/eth0/mtu)
+
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv4.conf.all.rp_filter=0
 
 if [[ "$IPSEC_SIDE" == "left" ]]; then
    local_overlay_ip=$LEFT_OVERLAY_IP
    echo $LEFT_OVERLAY_IP $RIGHT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
+   srcport1=$((VXLAN_PORT + 30))
+   srcport2=$((VXLAN_PORT + 40))
 else
    local_overlay_ip=$RIGHT_OVERLAY_IP
    echo $RIGHT_OVERLAY_IP $LEFT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
+   srcport1=$((VXLAN_PORT + 10))
+   srcport2=$((VXLAN_PORT + 20))
 fi
 
 # SETUP VXLAN TUNNEL
 
-ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT srcport $((VXLAN_PORT + 1)) $((VXLAN_PORT + 2))
+
+ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT srcport $srcport1 $srcport2
+ip link set dev vxlan42 mtu $((eth0_mtu - VXLAN_OVERHEAD))
 ip addr add $local_overlay_ip/24 dev vxlan42
 ip link set up vxlan42
 
@@ -39,6 +50,7 @@ conn mytunnel
     mark=5/0xffffffff
     vti-interface=vti01
     vti-routing=no
+    mtu=$((eth0_mtu - VXLAN_OVERHEAD - IPSEC_OVERHEAD))
 EOF
 
 
