@@ -45,7 +45,7 @@ fi
 while true
 do
     if [[ "$IPSEC_SIDE" == "left" ]]; then
-       ipsec whack --trafficstatus | grep -q '"mytunnel"' || exit
+       ipsec whack --trafficstatus | grep -q '"mytunnel"' || echo "TUNNEL DISCONNECTED"
     fi
     sleep 5
 done

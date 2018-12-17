@@ -15,11 +15,13 @@ if [[ "$IPSEC_SIDE" == "left" ]]; then
    echo $LEFT_OVERLAY_IP $RIGHT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
    srcport1=$((VXLAN_PORT + 30))
    srcport2=$((VXLAN_PORT + 40))
+   dst_ipsec=169.254.1.2
 else
    local_overlay_ip=$RIGHT_OVERLAY_IP
    echo $RIGHT_OVERLAY_IP $LEFT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
    srcport1=$((VXLAN_PORT + 10))
    srcport2=$((VXLAN_PORT + 20))
+   dst_ipsec=169.254.1.1
 fi
 
 # SETUP VXLAN TUNNEL
@@ -50,9 +52,12 @@ conn mytunnel
     mark=5/0xffffffff
     vti-interface=vti01
     vti-routing=no
-    mtu=$((eth0_mtu - VXLAN_OVERHEAD - IPSEC_OVERHEAD))
+    #mtu=$((eth0_mtu - VXLAN_OVERHEAD - IPSEC_OVERHEAD)) # let's not use mtu because makes libreswan insert routes
+    leftvti=169.254.1.1/30
+    rightvti=169.254.1.2/30
+    leftupdown=/updown.sh
+    rightupdown=/updown.sh
 EOF
-
 
 # Check configuration file
 /usr/libexec/ipsec/addconn --config /etc/ipsec.conf --checkconfig
@@ -66,3 +71,18 @@ EOF
 /usr/libexec/ipsec/pluto --leak-detective --config /etc/ipsec.conf #--nofork
 sleep 5
 ipsec auto --add mytunnel
+
+# redirect local port 80:490 back and forth
+
+for proto in udp tcp; do
+
+   iptables -t nat -A PREROUTING -p $proto -i eth0 -m multiport \
+            --dports 80:490 \
+            -j DNAT --to-destination $dst_ipsec
+   iptables -A FORWARD -p $proto -d $dst_ipsec -m multiport \
+            --dports 80:490 \
+            -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+
+   iptables -t nat -A POSTROUTING -j MASQUERADE
+done
+
