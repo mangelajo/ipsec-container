@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test 
+spec:
+  selector:
+    matchLabels:
+      run: test
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: test
+    spec:
+      containers:
+      - name: test 
+        image: yboaron/kuryr-udp-demo 
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+          allowPrivilegeEscalation: true
+          privileged: true
+          runAsUser: 0

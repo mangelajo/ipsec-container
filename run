@@ -1,12 +1,27 @@
 set -x
-side=$1
 
-ip=$(cat ./vars | grep "^${side}_local_ip" | sed -e 's/.*=//')
+source vars
 
-sudo docker run --rm --name $side -ti \
+# CREATE A NETWORK
+if [ "$(sudo docker network list | grep 'vpn-network')" = "" ]
+then
+-    sudo docker network create --subnet=$network_range --ip-range=$network_pool --gateway=$network_gw vpn-network
+fi
+
+sudo docker stop left right
+
+sudo docker run --rm -d --name left \
     --privileged \
     --cap-add NET_ADMIN \
-    --ip=$ip \
+    --ip=$left_local_ip \
     --network=vpn-network \
-    -v $(pwd)/$side:/configuration \
-    tun bash /${side}.sh
+    -e REMOTE_IP=$right_local_ip \
+    -e IPSEC_SIDE=left tun
+
+sudo docker run --rm -d --name right \
+    --privileged \
+    --cap-add NET_ADMIN \
+    --ip=$right_local_ip \
+    --network=vpn-network \
+    -e REMOTE_IP=$left_local_ip \
+    -e IPSEC_SIDE=right tun

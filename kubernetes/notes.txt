@@ -1,0 +1,4 @@
+oc adm policy add-scc-to-user privileged -z default -n default
+
+oc new-app -e MYSQL_ROOT_PASSWORD=1234root -e MYSQL_USER=user -e MYSQL_PASSWORD=pass -e MYSQL_DATABASE=db    openshift/mysql-55-centos7
+
