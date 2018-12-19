@@ -12,6 +12,6 @@ spec:
   ports:
    - port: 30020
      nodePort: 30020
-     targetPort: 30021
+     targetPort: 30020
      protocol: UDP
 
