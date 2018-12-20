@@ -82,7 +82,7 @@ for proto in udp tcp; do
    iptables -A FORWARD -p $proto -d $dst_ipsec -m multiport \
             --dports 80:490 \
             -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
-
-   iptables -t nat -A POSTROUTING -j MASQUERADE
 done
+
+iptables -t nat -A POSTROUTING -j MASQUERADE
 
