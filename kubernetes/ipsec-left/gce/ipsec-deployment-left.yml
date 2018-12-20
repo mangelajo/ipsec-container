@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ipsec-left-gce
+spec:
+  selector:
+    matchLabels:
+      run: ipsec-left-gce
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: ipsec-left-gce
+    spec:
+      nodeSelector:
+        ipsec: A
+      containers:
+      - name: ipsec-left
+        image: mangelajo/ipsec-container
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+          allowPrivilegeEscalation: true
+          privileged: true
+          runAsUser: 0
+        env:
+        - name: REMOTE_IP
+          value: 38.145.35.46
+        - name: VXLAN_PORT
+          value: "30024"
+        - name: IPSEC_SIDE
+          value: left
+        ports:
+        - containerPort: 30024
+          protocol: UDP
+          # hostPort: 30020
+        - containerPort: 80
+        - containerPort: 81
+        - containerPort: 82
+        - containerPort: 83
+        - containerPort: 84
+        - containerPort: 85
+        - containerPort: 86
+        - containerPort: 87
+        - containerPort: 88
+        - containerPort: 89
+        - containerPort: 90
+        - containerPort: 443
+        - containerPort: 444
+        - containerPort: 445
+        - containerPort: 446
+        - containerPort: 447
+        - containerPort: 448
+        - containerPort: 449
+        - containerPort: 450
+        - containerPort: 451
+        - containerPort: 452
+        - containerPort: 453
