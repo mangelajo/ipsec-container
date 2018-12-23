@@ -1,6 +1,4 @@
-Scripts that build and launch two docker containers with
-an ipsec tunnel (encapsulated in a vxlan tunnel) between
-them.
+Scripts that build a docker container for VXLAN+ipsec tunnels
 
 Usage:
 
@@ -39,3 +37,17 @@ mounted on /configuration including the file "routes.sh"
 1. chmod +x that file ;-)
 2. add "ip route" commands to that file...
 3. ...where if you want traffic to go into the tunnel the "action" is dev vti01
+
+# Usage in kubernetes integration
+
+Inside the kubernetes directory there are a sets of yaml files that you can
+use to build and test kubernetes to kubernetes IPSEC tunnels.
+
+The "deployment" yamls have a set of variables, including REMOTE_IP that needs
+to point to the public IP exposing the remote cluster UDP port used for communication.
+
+Imagine you have cluster A, with a public IP address 38.145.34.212 and UDP exposed on 30020
+for VXLAN communication, and cluster B, with a public IP address 38.145.35.46
+
+
+
