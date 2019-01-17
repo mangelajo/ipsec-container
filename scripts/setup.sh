@@ -10,6 +10,12 @@ eth0_mtu=$(cat /sys/class/net/eth0/mtu)
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv4.conf.all.rp_filter=0
 
+if [[ "x$VXLAN_BASE_PORT" != "x" ]]; then
+   STATEFULSET_REPLICA=$(hostname | grep -Eo '[0-9]+$')
+   VXLAN_PORT=$((VXLAN_BASE_PORT + STATEFULSET_REPLICA))
+fi
+
+
 if [[ "$IPSEC_SIDE" == "left" ]]; then
    local_overlay_ip=$LEFT_OVERLAY_IP
    echo $LEFT_OVERLAY_IP $RIGHT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
@@ -45,6 +51,7 @@ conn mytunnel
     auto=add
     nat-ikev1-method=none
     authby=secret
+    phase2alg=aes_gcm-null
     left=$LEFT_OVERLAY_IP
     right=$RIGHT_OVERLAY_IP
     leftsubnet=0.0.0.0/0
@@ -53,10 +60,10 @@ conn mytunnel
     vti-interface=vti01
     vti-routing=no
     #mtu=$((eth0_mtu - VXLAN_OVERHEAD - IPSEC_OVERHEAD)) # let's not use mtu because makes libreswan insert routes
-    leftvti=169.254.1.1/30
-    rightvti=169.254.1.2/30
-    leftupdown=/updown.sh
-    rightupdown=/updown.sh
+    #leftvti=169.254.1.1/30
+    #rightvti=169.254.1.2/30
+    #leftupdown=/updown.sh
+    #rightupdown=/updown.sh
 EOF
 
 # Check configuration file

@@ -1,0 +1,130 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipsec-service-right-0-tcp
+  labels:
+    run: ipsec-right
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: ipsec-right-0 
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+   - port: 30024
+     nodePort: 30024
+     targetPort: 30024
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipsec-service-right-0
+  labels:
+    run: ipsec-right
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: ipsec-right-0 
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+   - port: 30020
+     nodePort: 30020
+     targetPort: 30020
+     protocol: UDP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipsec-service-right-1
+  labels:
+    run: ipsec-right
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: ipsec-right-1
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+   - port: 30021
+     nodePort: 30021
+     targetPort: 30021
+     protocol: UDP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ipsec-service-right-2
+  labels:
+    run: ipsec-right
+spec:
+  selector:
+    statefulset.kubernetes.io/pod-name: ipsec-right-2
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+   - port: 30022
+     nodePort: 30022
+     targetPort: 30022
+     protocol: UDP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ipsec-right
+spec:
+  serviceName: "ipsec-right-a"
+  podManagementPolicy: "Parallel"
+  replicas: 3
+  selector:
+    matchLabels:
+      run: ipsec-right
+  template:
+    metadata:
+      labels:
+        run: ipsec-right
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+      - name: ipsec-right
+        image: mangelajo/ipsec-container
+        securityContext:
+          capabilities:
+            add: ["NET_ADMIN"]
+          allowPrivilegeEscalation: true
+          privileged: true
+          runAsUser: 0
+        env:
+        - name: REMOTE_IP
+          value: 38.145.34.212
+        - name: VXLAN_BASE_PORT
+          value: "30020"
+        - name: IPSEC_SIDE
+          value: right
+        ports:
+        - containerPort: 30024
+        - containerPort: 30020
+          protocol: UDP
+        - containerPort: 30021
+          protocol: UDP
+        - containerPort: 30022
+          protocol: UDP
+        - containerPort: 80
+        - containerPort: 81
+        - containerPort: 82
+        - containerPort: 83
+        - containerPort: 84
+        - containerPort: 85
+        - containerPort: 86
+        - containerPort: 87
+        - containerPort: 88
+        - containerPort: 89
+        - containerPort: 90
+        - containerPort: 443
+        - containerPort: 444
+        - containerPort: 445
+        - containerPort: 446
+        - containerPort: 447
+        - containerPort: 448
+        - containerPort: 449
+        - containerPort: 450
+        - containerPort: 451
+        - containerPort: 452
+        - containerPort: 453

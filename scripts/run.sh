@@ -27,13 +27,25 @@ if [[ "$IPSEC_SIDE" == "left" ]]; then
 	sleep 5
 fi
 
-# post connection
+# Wait for the tunnel to go up
 
 while true
 do
     ip tunnel | grep -q vti01 && break
     sleep 1
 done
+
+
+# Assign an LLE IP over the tunnel connection
+
+if [[ "$IPSEC_SIDE" == "left" ]]; then
+  MY_IP=169.254.1.1/30
+else
+  MY_IP=169.254.1.2/30
+fi
+
+ip l set dev vti01 up
+ip a add dev vti01 $MY_IP
 
 if [ -f /configuration/routes.sh ]
 then
