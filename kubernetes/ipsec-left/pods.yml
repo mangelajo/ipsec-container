@@ -27,7 +27,7 @@ spec:
         command:
         - sh
         - -c
-        - ping -W 2 -c 1 169.254.1.2
+        - ip a show dev vti01 | grep 169.254.1 && ping -W 2 -c 1 169.254.1.2
       initialDelaySeconds: 30
       periodSeconds: 10 
       timeoutSeconds: 3
@@ -36,7 +36,7 @@ spec:
         command:
         - sh
         - -c
-        - ping -W 2 -c 1 169.254.1.2
+        - ip a show dev vti01 | grep 169.254.1 && ping -W 2 -c 1 169.254.1.2
       initialDelaySeconds: 5
       periodSeconds: 3 
       timeoutSeconds: 2
@@ -46,25 +46,23 @@ spec:
     - containerPort: 30020
       hostPort: 30020
       protocol: UDP
-    - containerPort: 80
-    - containerPort: 81
-    - containerPort: 82
-    - containerPort: 83
-    - containerPort: 84
-    - containerPort: 85
-    - containerPort: 86
-    - containerPort: 87
-    - containerPort: 88
-    - containerPort: 89
-    - containerPort: 90
-    - containerPort: 443
-    - containerPort: 444
-    - containerPort: 445
-    - containerPort: 446
-    - containerPort: 447
-    - containerPort: 448
-    - containerPort: 449
-    - containerPort: 450
-    - containerPort: 451
-    - containerPort: 452
-    - containerPort: 453
+    - containerPort: 100
+    - containerPort: 101
+    - containerPort: 102
+    - containerPort: 103
+    - containerPort: 104
+    - containerPort: 105
+    - containerPort: 106
+    - containerPort: 107
+    - containerPort: 108
+    - containerPort: 109
+    - containerPort: 110
+    - containerPort: 111
+    - containerPort: 112
+    - containerPort: 113
+    - containerPort: 114
+    - containerPort: 115
+    - containerPort: 116
+    - containerPort: 117
+    - containerPort: 118
+    - containerPort: 119

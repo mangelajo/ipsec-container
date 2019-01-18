@@ -82,15 +82,15 @@ EOF
 sleep 5
 ipsec auto --add mytunnel
 
-# redirect local port 80:490 back and forth
+# redirect local ports 100:200 back and forth
 
 for proto in udp tcp; do
 
    iptables -t nat -A PREROUTING -p $proto -i eth0 -m multiport \
-            --dports 80:490 \
+            --dports 100:200 \
             -j DNAT --to-destination $dst_ipsec
    iptables -A FORWARD -p $proto -d $dst_ipsec -m multiport \
-            --dports 80:490 \
+            --dports 100:200 \
             -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 done
 
