@@ -42,6 +42,7 @@ if [[ "$IPSEC_SIDE" == "left" ]]; then
   MY_IP=169.254.1.1/30
 else
   MY_IP=169.254.1.2/30
+  iperf -s -p 30024 -D
 fi
 
 ip l set dev vti01 up

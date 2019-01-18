@@ -30,10 +30,13 @@ else
    dst_ipsec=169.254.1.1
 fi
 
+# CLEANUP conntrack for our UDP port before starting
+# this is only useful on the host (some hostPort issue)
+# conntrack -L -p udp | grep $VXLAN_PORT |  sed 's/=/ /g' | awk '{system("conntrack -D -s "$5" -d "$7" -p "$1" --sport="$9" --dport="$11)}'
+
 # SETUP VXLAN TUNNEL
-
-
-ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT srcport $srcport1 $srcport2
+ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT
+# random srcports # srcport $srcport1 $srcport2
 ip link set dev vxlan42 mtu $((eth0_mtu - VXLAN_OVERHEAD))
 ip addr add $local_overlay_ip/24 dev vxlan42
 ip link set up vxlan42
