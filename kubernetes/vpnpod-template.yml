@@ -19,6 +19,8 @@ objects:
     - name: iptables-data
       emptyDir: {}
     terminationGracePeriodSeconds: 5
+    nodeSelector:
+      extip: "${EXTERNAL_IP}"
     containers:
     - name: "vpnpod-${REMOTE_NAME}-${IPSEC_SIDE}-${REPLICA_ID}"
       image: mangelajo/ipsec-container
@@ -34,7 +36,7 @@ objects:
       - name: VXLAN_PORT
         value: "${VXLAN_PORT}"
       - name: IPSEC_SIDE
-        value: "${IPSEC_SIDE}" 
+        value: "${IPSEC_SIDE}"
       livenessProbe:
         exec:
           command:
@@ -91,6 +93,9 @@ parameters:
     description: "must be equal at both sides of the ipsec tunnel (left & right)"
     value: "30020"
     from: "[0-9]+"
+    required: true
+  - name: EXTERNAL_IP
+    description: "our external IP address, will be used as a nodeSelector: extip=$EXTERNAL_IP"
     required: true
   - name: REMOTE_IP
     description: "remote endpoint for the tunnel to talk to"
