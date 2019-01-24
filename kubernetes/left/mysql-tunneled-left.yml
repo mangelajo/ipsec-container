@@ -3,14 +3,12 @@ kind: Service
 metadata:
   name: mysql-55-centos7 
   labels:
-    run: ipsec-left
     app: mysql-55-centos7
 spec:
   selector:
-    run: ipsec-left
+    vpnpod: to-clusterb
   type: ClusterIP 
   ports:
    - port: 3306
-     targetPort: 80 
+     targetPort: 100 
      protocol: TCP
-
