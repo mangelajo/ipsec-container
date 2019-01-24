@@ -1,0 +1,105 @@
+apiVersion: v1 
+kind: Template
+metadata:
+  name: vpn-pod
+  annotations:
+    description: "vpnPod"
+    tags: "vpn,tunnel,interconnect"
+objects:
+- apiVersion: v1
+  kind: Pod 
+  metadata:
+    name: "vpnpod-${REMOTE_NAME}-${IPSEC_SIDE}-${REPLICA_ID}"
+    replica-id: "${{REPLICA_ID}}"
+    remote-cluster: "${{REMOTE_NAME}}"
+    labels:
+      vpnpod: "to-${REMOTE_NAME}"
+  spec:
+    volumes:
+    - name: iptables-data
+      emptyDir: {}
+    terminationGracePeriodSeconds: 5
+    containers:
+    - name: "vpnpod-${REMOTE_NAME}-${IPSEC_SIDE}-${REPLICA_ID}"
+      image: mangelajo/ipsec-container
+      securityContext:
+        allowPrivilegeEscalation: true
+        privileged: true
+        runAsUser: 0
+        capabilities:
+          add: ["NET_ADMIN"]
+      env:
+      - name: REMOTE_IP
+        value: "${REMOTE_IP}"
+      - name: VXLAN_PORT
+        value: "${VXLAN_PORT}"
+      - name: IPSEC_SIDE
+        value: "${IPSEC_SIDE}" 
+      livenessProbe:
+        exec:
+          command:
+          - sh
+          - -c
+          - ip a show dev vti01 | grep 169.254.1 && ping -W 2 -c 1 169.254.1.2
+        initialDelaySeconds: 30
+        periodSeconds: 10 
+        timeoutSeconds: 3
+      readinessProbe:
+        exec:
+          command:
+          - sh
+          - -c
+          - ip a show dev vti01 | grep 169.254.1 && ping -W 2 -c 1 169.254.1.2
+        initialDelaySeconds: 5
+        periodSeconds: 3 
+        timeoutSeconds: 2
+        successThreshold: 1
+        failureThreshold: 1
+      volumeMounts:
+      - name: iptables-data
+        mountPath: /iptables-data
+      ports:
+      - containerPort: "${{VXLAN_PORT}}"
+        hostPort: "${{VXLAN_PORT}}"
+        protocol: UDP
+      - containerPort: 100
+      - containerPort: 101
+      - containerPort: 102
+      - containerPort: 103
+      - containerPort: 104
+      - containerPort: 105
+      - containerPort: 106
+      - containerPort: 107
+      - containerPort: 108
+      - containerPort: 109
+      - containerPort: 110
+      - containerPort: 111
+      - containerPort: 112
+      - containerPort: 113
+      - containerPort: 114
+      - containerPort: 115
+      - containerPort: 116
+      - containerPort: 117
+      - containerPort: 118
+      - containerPort: 119
+parameters:
+  - name: IPSEC_SIDE
+    description: "left or right"
+    value: "left"
+    required: true
+  - name: VXLAN_PORT
+    description: "must be equal at both sides of the ipsec tunnel (left & right)"
+    value: "30020"
+    from: "[0-9]+"
+    required: true
+  - name: REMOTE_IP
+    description: "remote endpoint for the tunnel to talk to"
+    required: true
+  - name: REMOTE_NAME
+    description: "remote name used to construct the labels & metadata of the pod"
+    required: true
+  - name: REPLICA_ID
+    description: "A number that represents the ID of this tunnel replica for HA purposes"
+    value: "0"
+    from: "[0-9]+"
+    required: false
