@@ -1,0 +1,61 @@
+# create a service for wordpress
+apiVersion: v1
+kind: Service
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  ports:
+    - port: 30080 
+      nodePort: 30080
+      targetPort: 80
+  selector:
+    app: wordpress
+    tier: frontend
+  type: NodePort
+---
+apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: wordpress
+  labels:
+    app: wordpress
+spec:
+  selector:
+    matchLabels:
+      app: wordpress
+      tier: frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wordpress
+        tier: frontend
+    spec:
+      volumes:
+      - name: data 
+        emptyDir: {}
+      containers:
+      - name: wordpress
+        image: wordpress
+        #command: ["/bin/sh"]
+        securityContext:
+          allowPrivilegeEscalation: true
+          privileged: true
+          runAsUser: 0
+        #args: ["-c", "ls /etc/apache2/sites-available/ ; sed -i 's/80/8080/g' /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf && docker-php-entrypoint apache2-foreground"]
+        env:
+        - name: WORDPRESS_DB_HOST
+          value: mysql-55-centos7
+        - name: WORDPRESS_DB_USER
+          value: root
+        - name: WORDPRESS_DB_PASSWORD
+          value: 1234root
+        ports:
+        - containerPort: 80
+          name: wordpress
+        volumeMounts:
+        - name: data
+          mountPath: /var/www/html
