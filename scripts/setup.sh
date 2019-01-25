@@ -4,6 +4,7 @@ set -x
 
 VXLAN_OVERHEAD=50
 IPSEC_OVERHEAD=56
+IP_TCP_OVERHEAD=40
 
 eth0_mtu=$(cat /sys/class/net/eth0/mtu)
 

@@ -48,6 +48,14 @@ fi
 ip l set dev vti01 up
 ip a add dev vti01 $MY_IP
 
+# ensure that TCP connections going through the tunnel get the MSS adjusted accordingly to
+# the tunnel MTU
+
+MSS=$((eth0_mtu - VXLAN_OVERHEAD - IPSEC_OVERHEAD - IP_TCP_OVERHEAD))
+
+iptables -t mangle -A FORWARD -o vti01 -p tcp -m tcp --tcp-flags SYN,RST SYN \
+ 	-m tcpmss --mss $MSS:1536 -j TCPMSS --set-mss $MSS
+
 if [ -f /configuration/routes.sh ]
 then
     /configuration/routes.sh
