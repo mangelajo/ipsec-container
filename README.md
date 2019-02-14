@@ -46,8 +46,158 @@ use to build and test kubernetes to kubernetes IPSEC tunnels.
 The "deployment" yamls have a set of variables, including REMOTE_IP that needs
 to point to the public IP exposing the remote cluster UDP port used for communication.
 
-Imagine you have cluster A, with a public IP address 38.145.34.212 and UDP exposed on 30020
-for VXLAN communication, and cluster B, with a public IP address 38.145.35.46
+Imagine you have cluster A, with a public IP address 38.145.34.212 pointing to one
+of it's nodes and UDP exposed on 30020-30030 for VXLAN communication, and cluster B, with
+a public IP address 38.145.35.46 pointing to one of it's nodes, and same port.
+
+## Labeling the nodes
+
+First you must label the nodes to indentify the placement of the vpnPods,
+
+```bash
+$ export KUBECONFIG=~/.kube/clusterA-config
+$ oc label nodes node1 extip=38.145.34.212
+```
+
+```bash
+$ export KUBECONFIG=~/.kube/clusterB-config
+$ oc label nodes node1 extip=38.145.35.46
+```
+
+Those labels will be used by the vpn pods to select the specific nodes they need
+to sitting in (so the right IP/port will be pointed to them).
+
+## Starting the vpn pod sides
+
+### From clusterA to clusterB
+
+```bash
+$ export KUBECONFIG=~/.kube/clusterA-config
+
+$ oc process -f vpnpod-template.yml -p REPLICA_ID=1 \
+                                    -p IPSEC_SIDE=left \
+                                    -p REMOTE_IP=38.145.35.46 \
+                                    -p VXLAN_PORT=30020 \
+                                    -p REMOTE_NAME=clusterb \
+                                    -p EXTERNAL_IP=38.145.34.212 \
+                        | oc create -f -
+
+# Optional step
+# if you want HA, you can create a 2nd replica of the tunnel with the next UDP port
+# and the next replica ID
+$ oc process -f vpnpod-template.yml -p REPLICA_ID=2 \
+                                    -p IPSEC_SIDE=left \
+                                    -p REMOTE_IP=38.145.35.46 \
+                                    -p VXLAN_PORT=30021 \
+                                    -p REMOTE_NAME=clusterb \
+                                    -p EXTERNAL_IP=38.145.34.212 \
+                        | oc create -f -
+
+```
+
+### From clusterB to clusterA
+
+```bash
+$ export KUBECONFIG=~/.kube/clusterB-config
+
+$ oc process -f vpnpod-template.yml -p REPLICA_ID=1 \
+                                    -p IPSEC_SIDE=right \
+                                    -p REMOTE_IP=38.145.34.212 \
+                                    -p VXLAN_PORT=30020 \
+                                    -p REMOTE_NAME=clustera \
+                                    -p EXTERNAL_IP=38.145.35.46 \
+                        | oc create -f -
+
+# Optional step
+# if you want HA, you can create a 2nd replica of the tunnel with the next UDP port
+# and the next replica ID
+
+$ oc process -f vpnpod-template.yml -p REPLICA_ID=2 \
+                                    -p IPSEC_SIDE=right \
+                                    -p REMOTE_IP=38.145.34.212 \
+                                    -p VXLAN_PORT=30021 \
+                                    -p REMOTE_NAME=clustera \
+                                    -p EXTERNAL_IP=38.145.35.46 \
+                        | oc create -f -
+
+```
+
+## Checking status
+
+```bash
+$ export KUBECONFIG=~/.kube/clusterA-config
+$ oc get pods | grep vpnpod
+vpnpod-clusterb-left-1       1/1       Running   6          0d
+vpnpod-clusterb-left-2       1/1       Running   6          0d
+
+$ export KUBECONFIG=~/.kube/clusterB-config
+$ oc get pods | grep vpnpod
+vpnpod-clustera-right-1       1/1       Running   6          0d
+vpnpod-clustera-right-2       1/1       Running   6          0d
+
+
+# you can log into the vpn pods and see interfaces, addresses, etc...
+
+$ oc rsh vpnpod-clustera-right-1
+  ip l
+  ip a
+
+  ping 169.254.0.1 # left side (VXLAN level)
+  ping 169.254.1.1 # left side (IPSEC level)
+
+```
+
+## Creating a service in cluster A that you want to expose to cluster B
+
+```bash
+$ export KUBECONFIG=~/.kube/clusterA-config
+$ oc new-app -e MYSQL_ROOT_PASSWORD=1234root \
+             -e MYSQL_USER=user \
+             -e MYSQL_PASSWORD=pass \
+             -e MYSQL_DATABASE=db \
+             openshift/mysql-55-centos7
+
+# manual step to funnel this service through port 100 in vti tunnel:
+
+$ oc rsh vpnpod-clusterb-right-1
+   iptables -t nat -A PREROUTING -p tcp -i vti01 --dport 100 -j DNAT --to-destination $(getent hosts mysql-55-centos7 | awk '{ print $1 }'):3306
+   iptables -A FORWARD -m state -p tcp -d $(getent hosts mysql-55-centos7 | awk '{ print $1 }') --dport 3306 --state NEW,ESTABLISHED,RELATED -j ACCEPT
+   iptables -t nat -A POSTROUTING -j MASQUERADE
+   exit
+
+$ oc rsh vpnpod-clusterb-right-2
+   iptables -t nat -A PREROUTING -p tcp -i vti01 --dport 100 -j DNAT --to-destination $(getent hosts mysql-55-centos7 | awk '{ print $1 }'):3306
+   iptables -A FORWARD -m state -p tcp -d $(getent hosts mysql-55-centos7 | awk '{ print $1 }') --dport 3306 --state NEW,ESTABLISHED,RELATED -j ACCEPT
+   iptables -t nat -A POSTROUTING -j MASQUERADE
+   exit
+```
+
+## Exposing such service in cluster B
+```bash
+
+$ export KUBECONFIG=~/.kube/clusterB-config
+$ oc apply -f kubernetes/left/mysql-tunneled-left.yml
+```
+
+mysql-tunneled-left.yml looks like:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-55-centos7
+  labels:
+    app: mysql-55-centos7
+spec:
+  selector:
+    vpnpod: to-clusterb
+  type: ClusterIP
+  ports:
+   - port: 3306
+     targetPort: 100
+     protocol: TCP
+```
+
 
 
 
