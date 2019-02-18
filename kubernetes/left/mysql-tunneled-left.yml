@@ -6,7 +6,7 @@ metadata:
     app: mysql-55-centos7
 spec:
   selector:
-    vpnpod: to-clusterb
+    vpnpod: to-clustera
   type: ClusterIP
   ports:
    - port: 3306

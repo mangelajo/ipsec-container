@@ -159,13 +159,13 @@ $ oc new-app -e MYSQL_ROOT_PASSWORD=1234root \
 
 # manual step to funnel this service through port 100 in vti tunnel:
 
-$ oc rsh vpnpod-clusterb-right-1
+$ oc rsh vpnpod-clusterb-left-1
    iptables -t nat -A PREROUTING -p tcp -i vti01 --dport 100 -j DNAT --to-destination $(getent hosts mysql-55-centos7 | awk '{ print $1 }'):3306
    iptables -A FORWARD -m state -p tcp -d $(getent hosts mysql-55-centos7 | awk '{ print $1 }') --dport 3306 --state NEW,ESTABLISHED,RELATED -j ACCEPT
    iptables -t nat -A POSTROUTING -j MASQUERADE
    exit
 
-$ oc rsh vpnpod-clusterb-right-2
+$ oc rsh vpnpod-clusterb-left-2
    iptables -t nat -A PREROUTING -p tcp -i vti01 --dport 100 -j DNAT --to-destination $(getent hosts mysql-55-centos7 | awk '{ print $1 }'):3306
    iptables -A FORWARD -m state -p tcp -d $(getent hosts mysql-55-centos7 | awk '{ print $1 }') --dport 3306 --state NEW,ESTABLISHED,RELATED -j ACCEPT
    iptables -t nat -A POSTROUTING -j MASQUERADE
@@ -190,7 +190,7 @@ metadata:
     app: mysql-55-centos7
 spec:
   selector:
-    vpnpod: to-clusterb
+    vpnpod: to-clustera
   type: ClusterIP
   ports:
    - port: 3306
