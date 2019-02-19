@@ -51,9 +51,9 @@ to sitting in (so the right IP/port will be pointed to them).
 $ export KUBECONFIG=~/.kube/clusterA-config
 
 $ oc process -f vpnpod-template.yml -p REPLICA_ID=1 \
-                                    -p IPSEC_SIDE=left \
+                                    -p SIDE=left \
                                     -p REMOTE_IP=38.145.35.46 \
-                                    -p VXLAN_PORT=30020 \
+                                    -p UDP_PORT=30020 \
                                     -p REMOTE_NAME=clusterb \
                                     -p EXTERNAL_IP=38.145.34.212 \
                         | oc create -f -
@@ -62,9 +62,9 @@ $ oc process -f vpnpod-template.yml -p REPLICA_ID=1 \
 # if you want HA, you can create a 2nd replica of the tunnel with the next UDP port
 # and the next replica ID
 $ oc process -f vpnpod-template.yml -p REPLICA_ID=2 \
-                                    -p IPSEC_SIDE=left \
+                                    -p SIDE=left \
                                     -p REMOTE_IP=38.145.35.46 \
-                                    -p VXLAN_PORT=30021 \
+                                    -p UDP_PORT=30021 \
                                     -p REMOTE_NAME=clusterb \
                                     -p EXTERNAL_IP=38.145.34.212 \
                         | oc create -f -
@@ -77,9 +77,9 @@ $ oc process -f vpnpod-template.yml -p REPLICA_ID=2 \
 $ export KUBECONFIG=~/.kube/clusterB-config
 
 $ oc process -f vpnpod-template.yml -p REPLICA_ID=1 \
-                                    -p IPSEC_SIDE=right \
+                                    -p SIDE=right \
                                     -p REMOTE_IP=38.145.34.212 \
-                                    -p VXLAN_PORT=30020 \
+                                    -p UDP_PORT=30020 \
                                     -p REMOTE_NAME=clustera \
                                     -p EXTERNAL_IP=38.145.35.46 \
                         | oc create -f -
@@ -89,9 +89,9 @@ $ oc process -f vpnpod-template.yml -p REPLICA_ID=1 \
 # and the next replica ID
 
 $ oc process -f vpnpod-template.yml -p REPLICA_ID=2 \
-                                    -p IPSEC_SIDE=right \
+                                    -p SIDE=right \
                                     -p REMOTE_IP=38.145.34.212 \
-                                    -p VXLAN_PORT=30021 \
+                                    -p UDP_PORT=30021 \
                                     -p REMOTE_NAME=clustera \
                                     -p EXTERNAL_IP=38.145.35.46 \
                         | oc create -f -
