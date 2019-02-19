@@ -11,32 +11,32 @@ eth0_mtu=$(cat /sys/class/net/eth0/mtu)
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv4.conf.all.rp_filter=0
 
-if [[ "x$VXLAN_BASE_PORT" != "x" ]]; then
+if [[ "x$UDP_BASE_PORT" != "x" ]]; then
    STATEFULSET_REPLICA=$(hostname | grep -Eo '[0-9]+$')
-   VXLAN_PORT=$((VXLAN_BASE_PORT + STATEFULSET_REPLICA))
+   UDP_PORT=$((UDP_BASE_PORT + STATEFULSET_REPLICA))
 fi
 
 
 if [[ "$SIDE" == "left" ]]; then
    local_overlay_ip=$LEFT_OVERLAY_IP
    echo $LEFT_OVERLAY_IP $RIGHT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
-   srcport1=$((VXLAN_PORT + 30))
-   srcport2=$((VXLAN_PORT + 40))
+   srcport1=$((UDP_PORT + 30))
+   srcport2=$((UDP_PORT + 40))
    dst_ip=169.254.1.2
 else
    local_overlay_ip=$RIGHT_OVERLAY_IP
    echo $RIGHT_OVERLAY_IP $LEFT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
-   srcport1=$((VXLAN_PORT + 10))
-   srcport2=$((VXLAN_PORT + 20))
+   srcport1=$((UDP_PORT + 10))
+   srcport2=$((UDP_PORT + 20))
    dst_ip=169.254.1.1
 fi
 
 # CLEANUP conntrack for our UDP port before starting
 # this is only useful on the host (some hostPort issue)
-# conntrack -L -p udp | grep $VXLAN_PORT |  sed 's/=/ /g' | awk '{system("conntrack -D -s "$5" -d "$7" -p "$1" --sport="$9" --dport="$11)}'
+# conntrack -L -p udp | grep $UDP_PORT |  sed 's/=/ /g' | awk '{system("conntrack -D -s "$5" -d "$7" -p "$1" --sport="$9" --dport="$11)}'
 
 # SETUP VXLAN TUNNEL
-ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $VXLAN_PORT
+ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $UDP_PORT
 # random srcports # srcport $srcport1 $srcport2
 ip link set dev vxlan42 mtu $((eth0_mtu - VXLAN_OVERHEAD))
 ip addr add $local_overlay_ip/24 dev vxlan42

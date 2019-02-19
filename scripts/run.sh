@@ -7,7 +7,7 @@ IPSEC_ENABLED=${IPSEC_ENABLED:-yes}
 PSK=${PSK:-uazioghXBFsKmOEy9tMKjGE9G3o61iGpEmquNf28xt4inDVIume1fkyEZk2B79rG}
 SIDE=${SIDE:-$IPSEC_SIDE}
 SIDE=${SIDE:-left}
-VXLAN_PORT=${VXLAN_PORT:-4789}
+UDP_PORT=${UDP_PORT:-4789}
 REMOTE_IP=${REMOTE_IP:-NOIP}
 
 # Optional parameter tweaks
@@ -76,7 +76,7 @@ if [[ "$IPSEC_ENABLED" == "yes" ]]; then
         /configuration/routes.sh
     fi
 
-    # SRC_VXLAN_PORT=$(tcpdump -i eth0 -nn port 4789 -c 1 -Q in 2>/dev/null | head -n 1 | cut -d\  -f 3 | cut -d. -f 5)
+    # SRC_UDP_PORT=$(tcpdump -i eth0 -nn port 4789 -c 1 -Q in 2>/dev/null | head -n 1 | cut -d\  -f 3 | cut -d. -f 5)
 
     while true
     do

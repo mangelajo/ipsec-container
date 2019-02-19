@@ -1,4 +1,4 @@
-apiVersion: v1 
+apiVersion: v1
 kind: Template
 metadata:
   name: vpn-pod
@@ -7,7 +7,7 @@ metadata:
     tags: "vpn,tunnel,interconnect"
 objects:
 - apiVersion: v1
-  kind: Pod 
+  kind: Pod
   metadata:
     name: "vpnpod-${REMOTE_NAME}-${IPSEC_SIDE}-${REPLICA_ID}"
     replica-id: "${{REPLICA_ID}}"
@@ -85,11 +85,14 @@ objects:
       - containerPort: 118
       - containerPort: 119
 parameters:
-  - name: IPSEC_SIDE
+  - name: IPSEC_ENABLED
+    value: "yes"
+    required: false
+  - name: SIDE
     description: "left or right"
     value: "left"
     required: true
-  - name: VXLAN_PORT
+  - name: UDP_PORT
     description: "must be equal at both sides of the ipsec tunnel (left & right)"
     value: "30020"
     from: "[0-9]+"
