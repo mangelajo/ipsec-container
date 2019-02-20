@@ -34,7 +34,7 @@ fi
 # conntrack -L -p udp | grep $UDP_PORT |  sed 's/=/ /g' | awk '{system("conntrack -D -s "$5" -d "$7" -p "$1" --sport="$9" --dport="$11)}'
 
 # SETUP VXLAN TUNNEL
-ip link add name vxlan42 type vxlan id 42 udpcsum remote $REMOTE_IP dstport $UDP_PORT numtxqueues 8 numrxqueues 8
+ip link add name vxlan42 numtxqueues 8 numrxqueues 8 txqueuelen 2000 type vxlan id 42 udpcsum remote $REMOTE_IP dstport $UDP_PORT
 # random srcports # srcport $srcport1 $srcport2
 ip link set dev vxlan42 mtu $((eth0_mtu - VXLAN_OVERHEAD))
 ip addr add $local_overlay_ip/24 dev vxlan42
