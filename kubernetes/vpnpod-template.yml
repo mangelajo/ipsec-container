@@ -3,13 +3,13 @@ kind: Template
 metadata:
   name: vpn-pod
   annotations:
-    description: "vpnPod"
+    description: "vpn and fwd pod"
     tags: "vpn,tunnel,interconnect"
 objects:
 - apiVersion: v1
   kind: Pod
   metadata:
-    name: "vpnpod-${REMOTE_NAME}-${IPSEC_SIDE}-${REPLICA_ID}"
+    name: "vpnpod-${REMOTE_NAME}-${SIDE}-${REPLICA_ID}"
     replica-id: "${{REPLICA_ID}}"
     remote-cluster: "${{REMOTE_NAME}}"
     labels:
@@ -22,7 +22,7 @@ objects:
     nodeSelector:
       extip: "${EXTERNAL_IP}"
     containers:
-    - name: "vpnpod-${REMOTE_NAME}-${IPSEC_SIDE}-${REPLICA_ID}"
+    - name: "vpnpod-${REMOTE_NAME}-${SIDE}-${REPLICA_ID}"
       image: mangelajo/ipsec-container
       securityContext:
         allowPrivilegeEscalation: true
@@ -31,29 +31,27 @@ objects:
         capabilities:
           add: ["NET_ADMIN"]
       env:
+      - name: IPSEC_ENABLED
+        value: "${IPSEC_ENABLED}"
       - name: REMOTE_IP
         value: "${REMOTE_IP}"
-      - name: VXLAN_PORT
-        value: "${VXLAN_PORT}"
-      - name: IPSEC_SIDE
-        value: "${IPSEC_SIDE}"
+      - name: UDP_PORT
+        value: "${UDP_PORT}"
+      - name: SIDE
+        value: "${SIDE}"
       livenessProbe:
         exec:
           command:
-          - sh
-          - -c
-          - ip a show dev vti01 | grep 169.254.1 && ping -W 2 -c 1 169.254.1.2
+          - /healthcheck.sh
         initialDelaySeconds: 30
-        periodSeconds: 10 
+        periodSeconds: 10
         timeoutSeconds: 3
       readinessProbe:
         exec:
           command:
-          - sh
-          - -c
-          - ip a show dev vti01 | grep 169.254.1 && ping -W 2 -c 1 169.254.1.2
+          - /healtcheck.sh
         initialDelaySeconds: 5
-        periodSeconds: 3 
+        periodSeconds: 3
         timeoutSeconds: 2
         successThreshold: 1
         failureThreshold: 1
@@ -61,8 +59,8 @@ objects:
       - name: iptables-data
         mountPath: /iptables-data
       ports:
-      - containerPort: "${{VXLAN_PORT}}"
-        hostPort: "${{VXLAN_PORT}}"
+      - containerPort: "${{UDP_PORT}}"
+        hostPort: "${{UDP_PORT}}"
         protocol: UDP
       - containerPort: 100
       - containerPort: 101

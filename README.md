@@ -47,6 +47,9 @@ to sitting in (so the right IP/port will be pointed to them).
 
 ### From clusterA to clusterB
 
+NOTE: if you want to do a bare VXLAN connection (no IPSEC, please use the
+-p IPSEC_ENABLED=no parameter on both sides.
+
 ```bash
 $ export KUBECONFIG=~/.kube/clusterA-config
 

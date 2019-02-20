@@ -19,13 +19,11 @@ fi
 
 if [[ "$SIDE" == "left" ]]; then
    local_overlay_ip=$LEFT_OVERLAY_IP
-   echo $LEFT_OVERLAY_IP $RIGHT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
    srcport1=$((UDP_PORT + 30))
    srcport2=$((UDP_PORT + 40))
    dst_ip=169.254.1.2
 else
    local_overlay_ip=$RIGHT_OVERLAY_IP
-   echo $RIGHT_OVERLAY_IP $LEFT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
    srcport1=$((UDP_PORT + 10))
    srcport2=$((UDP_PORT + 20))
    dst_ip=169.254.1.1
@@ -36,16 +34,21 @@ fi
 # conntrack -L -p udp | grep $UDP_PORT |  sed 's/=/ /g' | awk '{system("conntrack -D -s "$5" -d "$7" -p "$1" --sport="$9" --dport="$11)}'
 
 # SETUP VXLAN TUNNEL
-ip link add name vxlan42 type vxlan id 42 remote $REMOTE_IP dstport $UDP_PORT
+ip link add name vxlan42 type vxlan id 42 udpcsum remote $REMOTE_IP dstport $UDP_PORT numtxqueues 8 numrxqueues 8
 # random srcports # srcport $srcport1 $srcport2
 ip link set dev vxlan42 mtu $((eth0_mtu - VXLAN_OVERHEAD))
 ip addr add $local_overlay_ip/24 dev vxlan42
 ip link set up vxlan42
 
+# otherwise ipsec on top of VXLAN packets land ethernet with the wrong checksum, don't know why
+ethtool -K eth0 tx-checksum-ip-generic off
 if [[ "$IPSEC_ENABLED" == "yes" ]]; then
-    # otherwise ipsec on top of VXLAN packets land ethernet with the wrong checksum
-    # kernel bug
-    ethtool -K eth0 tx-checksum-ip-generic off
+
+    if [[ "$SIDE" == "left" ]]; then
+       echo $LEFT_OVERLAY_IP $RIGHT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
+    else
+       echo $RIGHT_OVERLAY_IP $LEFT_OVERLAY_IP : PSK \"$PSK\" > /etc/ipsec.secrets
+    fi
 
 # WRITE IPSEC CONFIG
     cat <<EOF > /etc/ipsec.conf
@@ -86,15 +89,15 @@ EOF
     ipsec auto --add mytunnel
 fi # IPSEC_ENABLED == yes
 
-# redirect local ports 100:200 back and forth
+# redirect local ports 100:30000 back and forth
 
 for proto in udp tcp; do
 
    iptables -t nat -A PREROUTING -p $proto -i eth0 -m multiport \
-            --dports 100:200 \
+            --dports 100:30000 \
             -j DNAT --to-destination $dst_ip
    iptables -A FORWARD -p $proto -d $dst_ip -m multiport \
-            --dports 100:200 \
+            --dports 100:30000 \
             -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 done
 
