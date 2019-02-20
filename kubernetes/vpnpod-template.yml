@@ -42,6 +42,7 @@ objects:
       livenessProbe:
         exec:
           command:
+          - sh
           - /healthcheck.sh
         initialDelaySeconds: 30
         periodSeconds: 10
@@ -49,6 +50,7 @@ objects:
       readinessProbe:
         exec:
           command:
+          - sh
           - /healtcheck.sh
         initialDelaySeconds: 5
         periodSeconds: 3
