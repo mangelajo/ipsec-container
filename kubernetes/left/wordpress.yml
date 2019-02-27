@@ -7,12 +7,12 @@ metadata:
     app: wordpress
 spec:
   ports:
-    - port: 30080 
+    - port: 30080
       nodePort: 30080
       targetPort: 80
   selector:
     app: wordpress
-    tier: frontend
+    role: frontend
   type: NodePort
 ---
 apiVersion: apps/v1beta2 # for versions before 1.9.0 use apps/v1beta2
@@ -32,7 +32,7 @@ spec:
     metadata:
       labels:
         app: wordpress
-        tier: frontend
+        role: frontend
     spec:
       volumes:
       - name: data 
