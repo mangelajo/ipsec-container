@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: fwd-pod
+  annotations:
+    description: "fwd pod"
+    tags: "interconnect"
+objects:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: "fwdpod-${REMOTE_NAME}-${SIDE}-${REPLICA_ID}"
+    replica-id: "${{REPLICA_ID}}"
+    remote-cluster: "${{REMOTE_NAME}}"
+    labels:
+      vpnpod: "to-${REMOTE_NAME}"
+  spec:
+    terminationGracePeriodSeconds: 5
+    nodeSelector:
+      extip: "${EXTERNAL_IP}"
+    containers:
+    - name: "fwdpod-${REMOTE_NAME}-${REPLICA_ID}"
+      image: mangelajo/ipsec-container
+      securityContext:
+        allowPrivilegeEscalation: true
+        privileged: true
+        runAsUser: 0
+        capabilities:
+          add: ["NET_ADMIN"]
+      env:
+      - name: REMOTE_IP
+        value: "${REMOTE_IP}"
+      - name: MODE
+        value: "fwd"
+      livenessProbe:
+        exec:
+          command:
+          - /healthcheck.sh
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 3
+      readinessProbe:
+        exec:
+          command:
+          - /healthcheck.sh
+        initialDelaySeconds: 5
+        periodSeconds: 3
+        timeoutSeconds: 2
+        successThreshold: 1
+        failureThreshold: 1
+      ports:
+      - containerPort: 100
+      - containerPort: 101
+      - containerPort: 102
+      - containerPort: 103
+      - containerPort: 104
+      - containerPort: 105
+      - containerPort: 106
+      - containerPort: 107
+      - containerPort: 108
+      - containerPort: 109
+      - containerPort: 110
+      - containerPort: 111
+      - containerPort: 112
+      - containerPort: 113
+      - containerPort: 114
+      - containerPort: 115
+      - containerPort: 116
+      - containerPort: 117
+      - containerPort: 118
+      - containerPort: 119
+parameters:
+  - name: EXTERNAL_IP
+    description: "our external IP address, will be used as a nodeSelector: extip=$EXTERNAL_IP"
+    required: true
+  - name: REMOTE_IP
+    description: "remote endpoint for the tunnel to talk to"
+    required: true
+  - name: REMOTE_NAME
+    description: "remote name used to construct the labels & metadata of the pod"
+    required: true
+  - name: REPLICA_ID
+    description: "A number that represents the ID of this fwd tunnel replica for HA purposes"
+    value: "0"
+    from: "[0-9]+"
+    required: false

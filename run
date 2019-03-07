@@ -16,7 +16,7 @@ sudo docker run --rm -d --name left \
     --ip=$left_local_ip \
     --network=vpn-network \
     -e REMOTE_IP=$right_local_ip \
-    -e IPSEC_SIDE=left tun
+    -e SIDE=left tun \
 
 sudo docker run --rm -d --name right \
     --privileged \
@@ -24,4 +24,4 @@ sudo docker run --rm -d --name right \
     --ip=$right_local_ip \
     --network=vpn-network \
     -e REMOTE_IP=$left_local_ip \
-    -e IPSEC_SIDE=right tun
+    -e SIDE=right tun

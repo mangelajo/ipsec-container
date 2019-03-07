@@ -1,0 +1,34 @@
+#!/bin/sh
+
+localport=$1
+svc_name=$2
+remoteport=$3
+protocol=${4:-tcp}
+
+function usage() {
+    echo "/addsvc <localport> <svc_name> <remoteport>"
+    echo ""
+    echo " NOTE: our remote ip is $REMOTE_IP [protocol: tcp or udp]"
+}
+
+if [[ "x$localport" == "x" ]] || [[ "x$svc_name" == "x" ]] || [[ "x$remoteport" == "x" ]]; then
+   usage
+   exit 1
+fi
+
+ip=$(getent hosts $svc_name | awk '{ print $1 }')
+
+if [[ "x$ip" == "x" ]]; then
+    echo "cannot find service $svc_name"
+    exit 1
+fi
+
+if [[ "$IPSEC_ENABLED" == "yes" ]]; then
+    tnl_iface=vti01
+else
+    tnl_iface=vxlan42
+fi
+
+
+iptables -t nat -A PREROUTING -p $protocol -i $tnl_iface --dport $localport -j DNAT --to-destination $ip:$remoteport
+iptables -A FORWARD -m state -p $protocol -d $ip --dport $remoteport --state NEW,ESTABLISHED,RELATED -j ACCEPT

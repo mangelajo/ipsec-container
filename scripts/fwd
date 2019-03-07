@@ -1,0 +1,20 @@
+#!/bin/sh
+
+localport=$1
+remoteport=$2
+
+function usage() {
+    echo "/fwd <localport> <remoteport>"
+    echo ""
+    echo " NOTE: our remote ip is $REMOTE_IP"
+}
+
+if [[ "x$localport" == "x" ]] || [[ "x$remoteport" == "x" ]]; then
+   usage
+   exit 1
+fi
+
+
+
+iptables -t nat -A PREROUTING -p tcp --dport $localport -j DNAT --to-destination $REMOTE_IP:$remoteport
+
